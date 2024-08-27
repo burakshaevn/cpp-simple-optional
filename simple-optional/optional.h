@@ -117,11 +117,19 @@ public:
 
     // Операторы * и -> не должны делать никаких проверок на пустоту Optional.
     // Эти проверки остаются на совести программиста
-    T& operator*() {
+    //T& operator*() {
+    //    return *ptr_;
+    //}
+    /*const T& operator*() const {
+        return *ptr_;
+    }*/
+
+    // Перегрузка по rvalue-ссылке сделана для того чтобы при вызове у временных объектов они возвращали rvalue-ссылку на содержимое Optional.
+    T& operator*()& {
         return *ptr_;
     }
-    const T& operator*() const {
-        return *ptr_;
+    T&& operator*()&& {
+        return std::move(*ptr_);
     }
     T* operator->() {
         return this->ptr_;
@@ -130,16 +138,49 @@ public:
         return ptr_;
     }
 
+    const T& operator*() const& {
+        return *ptr_;
+    }
+
+    const T&& operator*() const&& {
+        return std::move(*ptr_);
+    }
+
+
     // Метод Value() генерирует исключение BadOptionalAccess, если Optional пуст
-    T& Value() {
+    //T& Value() {
+    //    if (is_initialized_) {
+    //        return *ptr_;
+    //    }
+    //    throw BadOptionalAccess();
+    //}
+    //const T& Value() const {
+    //    if (is_initialized_) { 
+    //        return *ptr_;
+    //    }
+    //    throw BadOptionalAccess();
+    //}
+
+    // Перегрузка по rvalue-ссылке сделана для того чтобы при вызове у временных объектов они возвращали rvalue-ссылку на содержимое Optional.
+    T& Value()& {
+        if (!is_initialized_) throw BadOptionalAccess();
+        return *ptr_;
+    }
+    T&& Value()&& {
+        if (!is_initialized_) throw BadOptionalAccess();
+        return std::move(*ptr_);
+    }
+
+    const T& Value() const& {
         if (is_initialized_) {
             return *ptr_;
         }
         throw BadOptionalAccess();
     }
-    const T& Value() const {
+
+    const T&& Value() const&& {
         if (is_initialized_) {
-            return *ptr_;
+            return std::move(*ptr_);
         }
         throw BadOptionalAccess();
     }
